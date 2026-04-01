@@ -54,7 +54,7 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
           app_location: "artifacts/free-time-survey"
-                    skip_app_build: true
+          skip_app_build: true
           api_location: ""
 
   close_pull_request_job:

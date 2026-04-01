@@ -1,0 +1,207 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: Free Time Survey API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: survey
+    description: Survey submission and results
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /survey/submit:
+    post:
+      operationId: submitSurvey
+      tags: [survey]
+      summary: Submit a survey response
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SurveySubmission"
+      responses:
+        "201":
+          description: Survey submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SurveySubmitResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /survey/results:
+    get:
+      operationId: getSurveyResults
+      tags: [survey]
+      summary: Get aggregated survey results
+      responses:
+        "200":
+          description: Aggregated results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SurveyResults"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    SurveySubmission:
+      type: object
+      properties:
+        age:
+          type: integer
+          minimum: 18
+          maximum: 24
+        major:
+          type: string
+          minLength: 1
+        hoursPerWeek:
+          type: string
+          enum:
+            - "1-2 hours"
+            - "2-4 hours"
+            - "4-6 hours"
+            - "8-10 hours"
+            - "more than 10 hours"
+        freeTimeHobbies:
+          type: string
+          minLength: 1
+      required:
+        - age
+        - major
+        - hoursPerWeek
+        - freeTimeHobbies
+
+    SurveySubmitResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        message:
+          type: string
+      required:
+        - id
+        - message
+
+    AgeBucket:
+      type: object
+      properties:
+        age:
+          type: integer
+        count:
+          type: integer
+      required:
+        - age
+        - count
+
+    MajorBucket:
+      type: object
+      properties:
+        major:
+          type: string
+        count:
+          type: integer
+      required:
+        - major
+        - count
+
+    HoursBucket:
+      type: object
+      properties:
+        hoursPerWeek:
+          type: string
+        count:
+          type: integer
+      required:
+        - hoursPerWeek
+        - count
+
+    HobbyBucket:
+      type: object
+      properties:
+        hobby:
+          type: string
+        count:
+          type: integer
+      required:
+        - hobby
+        - count
+
+    SurveyResults:
+      type: object
+      properties:
+        totalResponses:
+          type: integer
+        ageDistribution:
+          type: array
+          items:
+            $ref: "#/components/schemas/AgeBucket"
+        majorDistribution:
+          type: array
+          items:
+            $ref: "#/components/schemas/MajorBucket"
+        hoursDistribution:
+          type: array
+          items:
+            $ref: "#/components/schemas/HoursBucket"
+        hobbyDistribution:
+          type: array
+          items:
+            $ref: "#/components/schemas/HobbyBucket"
+      required:
+        - totalResponses
+        - ageDistribution
+        - majorDistribution
+        - hoursDistribution
+        - hobbyDistribution
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        details:
+          type: string
+      required:
+        - error
